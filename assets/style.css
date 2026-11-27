@@ -179,14 +179,14 @@ tbody tr[data-incident]:hover { background: #f7faf9; }
 .interpretation p { margin: 0; color: var(--muted); font-size: .86rem; line-height: 1.75; }
 
 .drawer-backdrop { position: fixed; inset: 0; z-index: 49; background: rgba(5, 19, 22, .38); backdrop-filter: blur(3px); }
-.drawer { position: fixed; inset: 0 0 0 auto; z-index: 50; width: min(720px, 96vw); overflow-y: auto; background: #f5f7f7; box-shadow: -18px 0 55px rgba(4, 18, 21, .2); animation: drawer-in .25s ease both; }
+.drawer { position: fixed; inset: 0 0 0 auto; z-index: 50; width: min(820px, 96vw); overflow-y: auto; background: #f5f7f7; box-shadow: -18px 0 55px rgba(4, 18, 21, .2); animation: drawer-in .25s ease both; }
 @keyframes drawer-in { from { transform: translateX(24px); opacity: .4; } to { transform: translateX(0); opacity: 1; } }
 .drawer-header { position: sticky; top: 0; z-index: 2; display: flex; min-height: 92px; padding: 20px 24px; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, .95); backdrop-filter: blur(14px); }
 .drawer-header h2 { margin: 0; font-size: 1.15rem; letter-spacing: -.025em; }
 .drawer-content { padding: 22px; }
-.incident-hero, .detail-section { margin-bottom: 16px; padding: 22px; border: 1px solid var(--line); border-radius: 15px; background: white; }
+.incident-hero, .detail-section { margin-bottom: 16px; padding: 26px; border: 1px solid var(--line); border-radius: 15px; background: white; }
 .incident-hero-top { display: flex; justify-content: space-between; gap: 20px; }
-.incident-hero h3 { margin: 14px 0 9px; font-size: 1.24rem; line-height: 1.45; }
+.incident-hero h3 { margin: 16px 0 10px; font-size: 1.38rem; line-height: 1.45; }
 .incident-hero p { margin: 0; color: var(--muted); font-size: .83rem; line-height: 1.7; }
 .risk { display: grid; width: 88px; height: 88px; flex: 0 0 auto; place-items: center; border: 1px solid #ecd2d5; border-radius: 50%; color: var(--red); background: #fff8f8; }
 .risk strong, .risk small { display: block; text-align: center; }
@@ -212,6 +212,48 @@ tbody tr[data-incident]:hover { background: #f7faf9; }
 .timeline-card small { color: var(--muted); font-size: .72rem; line-height: 1.5; }
 .tag-list { display: flex; flex-wrap: wrap; gap: 7px; }
 .tag { padding: 6px 9px; color: #3e5d5b; border: 1px solid #cfe0de; border-radius: 8px; background: #f3f8f7; font-size: .68rem; font-weight: 750; }
+.section-title-row { display: flex; margin-bottom: 18px; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.section-title-row h3 { margin-bottom: 5px; }
+.section-title-row p { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.6; }
+.section-title-row > span { flex: 0 0 auto; color: var(--subtle); font-size: .72rem; }
+.review-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.review-form label { display: grid; gap: 7px; color: #53656c; font-size: .76rem; font-weight: 750; }
+.review-form input, .review-form select, .review-form textarea { width: 100%; color: var(--ink); border: 1px solid var(--line); border-radius: 9px; outline: 0; background-color: #f8fafa; font-size: .82rem; }
+.review-form input, .review-form select { min-height: 43px; padding: 0 12px; }
+.review-form select { padding-right: 36px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23576b72' stroke-width='2'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E"); background-position: right 12px center; background-repeat: no-repeat; }
+.review-form textarea { min-height: 116px; padding: 12px; resize: vertical; line-height: 1.6; }
+.review-form input:focus, .review-form select:focus, .review-form textarea:focus { border-color: #83b7b1; background-color: white; box-shadow: 0 0 0 4px rgba(23, 107, 102, .07); }
+.review-note, .review-actions { grid-column: 1 / -1; }
+.review-actions { display: flex; justify-content: flex-end; }
+.save-review-button, .copy-alert-button { min-height: 40px; padding: 0 15px; border: 0; border-radius: 9px; color: white; background: var(--teal-dark); font-size: .76rem; font-weight: 800; }
+.raw-alert-list { display: grid; gap: 11px; }
+.raw-alert-card { overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: #fbfcfc; }
+.raw-alert-card > summary { display: grid; min-height: 58px; padding: 13px 15px; grid-template-columns: auto 1fr auto; align-items: center; gap: 11px; cursor: pointer; list-style: none; }
+.raw-alert-card > summary::-webkit-details-marker { display: none; }
+.raw-alert-card > summary::before { content: "+"; display: grid; width: 24px; height: 24px; grid-column: 1; grid-row: 1; place-items: center; color: var(--teal-dark); border: 1px solid #ccdcdb; border-radius: 7px; background: white; font-size: 1rem; }
+.raw-alert-card[open] > summary::before { content: "−"; }
+.raw-alert-card > summary span { grid-column: 2; color: var(--teal); font-size: .7rem; font-weight: 850; text-transform: uppercase; }
+.raw-alert-card > summary strong { grid-column: 2; font-size: .8rem; line-height: 1.45; }
+.raw-alert-card > summary em { grid-column: 3; grid-row: 1 / span 2; padding: 5px 8px; color: #53666d; border-radius: 7px; background: #edf3f3; font-family: Consolas, monospace; font-size: .7rem; font-style: normal; }
+.raw-alert-body { padding: 0 15px 16px; border-top: 1px solid #e7ecec; }
+.alert-field-grid { display: grid; padding-top: 15px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.alert-field { min-width: 0; padding: 11px 12px; border-radius: 8px; background: #f2f6f6; }
+.alert-field span, .alert-field strong { display: block; }
+.alert-field span { color: var(--subtle); font-size: .68rem; }
+.alert-field strong { margin-top: 5px; overflow-wrap: anywhere; font-size: .76rem; line-height: 1.45; }
+.alert-field .mono { font-family: Consolas, "Cascadia Code", monospace; font-size: .7rem; }
+.alert-message-block { margin-top: 11px; }
+.alert-message-block > span { display: block; margin-bottom: 7px; color: var(--subtle); font-size: .7rem; font-weight: 750; }
+.alert-message-block pre, .raw-json-details pre { margin: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-family: Consolas, "Cascadia Code", monospace; font-size: .7rem; line-height: 1.6; }
+.alert-message-block pre { max-height: 230px; padding: 13px; color: #33474e; border: 1px solid #e1e8e9; border-radius: 8px; background: white; }
+.json-actions { display: flex; margin: 12px 0 9px; justify-content: flex-end; }
+.copy-alert-button { min-height: 34px; color: var(--teal-dark); border: 1px solid #c9dcda; background: white; }
+.raw-json-details { border: 1px solid #dce5e5; border-radius: 9px; background: white; }
+.raw-json-details > summary { padding: 12px 14px; color: #385956; cursor: pointer; font-size: .76rem; font-weight: 800; }
+.raw-json-details pre { max-height: 420px; padding: 14px; color: #d8e5e3; background: #132a2e; }
+.report-export-section { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.report-export-section h3 { margin-bottom: 5px; }
+.report-export-section p { margin: 0; color: var(--muted); font-size: .76rem; line-height: 1.55; }
 .drawer-actions { display: flex; gap: 10px; }
 .download-button { display: flex; min-height: 42px; padding: 0 14px; align-items: center; gap: 8px; color: white; border: 0; border-radius: 10px; background: var(--teal-dark); font-size: .76rem; font-weight: 750; }
 .toast { position: fixed; right: 24px; bottom: 24px; z-index: 80; padding: 13px 16px; color: white; border-radius: 10px; background: #173d40; box-shadow: 0 14px 35px rgba(0, 0, 0, .2); font-size: .78rem; }
@@ -254,6 +296,10 @@ tbody tr[data-incident]:hover { background: #f7faf9; }
   .incident-hero-top { flex-direction: column-reverse; }
   .risk { width: 72px; height: 72px; }
   .incident-meta { grid-template-columns: 1fr; }
+  .review-form, .alert-field-grid { grid-template-columns: 1fr; }
+  .review-assignee, .review-note, .review-actions { grid-column: 1; }
+  .section-title-row, .report-export-section { align-items: stretch; flex-direction: column; }
+  .report-export-section .download-button { justify-content: center; }
   .drawer-content { padding: 14px; }
 }
 

