@@ -1,0 +1,148 @@
+{
+  "meta": {
+    "id": "set01",
+    "name": "PowerShell execution and persistence",
+    "source": "DEDALE",
+    "start": "2025-01-06T09:00:00Z",
+    "end": "2025-01-06T14:00:00Z",
+    "attack_host": "CLIENT2.breach.local",
+    "normal_hosts": 10,
+    "indexed_documents": 1713327,
+    "raw_alerts": 9,
+    "incidents": 6,
+    "malicious_incidents": 6,
+    "positive_processes": 8,
+    "rule_process_recall": 0.875,
+    "evidence_process_coverage": 1.0
+  },
+  "incidents": [
+    {
+      "id": "INC-05AE314BD6",
+      "timestamp": "2025-01-06T10:01:08.786Z",
+      "title": "PowerShell Script Block With Network Retrieval",
+      "host": "CLIENT2.breach.local",
+      "severity": "medium",
+      "risk_score": 69,
+      "verdict": "true_positive",
+      "alert_count": 1,
+      "summary": "PowerShell 네트워크 조회 이후 압축 파일과 의심 실행 파일 생성 확인",
+      "rules": ["PowerShell Script Block With Network Retrieval"],
+      "techniques": ["T1059.001", "T1105"],
+      "findings": [
+        "Invoke-WebRequest를 이용한 외부 압축 파일 조회",
+        "AppData 하위 tmp.zip과 scvhost.exe 생성",
+        "다운로드 직후 의심 실행 파일 실행"
+      ],
+      "limitations": ["원격지 연결 성공 여부를 직접 확인할 네트워크 이벤트 부족"],
+      "recommendations": ["CLIENT2 호스트 격리", "scvhost.exe와 관련 파일 수집", "동일 사용자 계정 활동 검토"],
+      "timeline": [
+        {"timestamp": "2025-01-06T10:01:08.786Z", "event_code": "4104", "title": "PowerShell ScriptBlock", "detail": "Invoke-WebRequest를 이용한 압축 파일 조회"},
+        {"timestamp": "2025-01-06T10:01:13.986Z", "event_code": "11", "title": "tmp.zip 생성", "detail": "사용자 Roaming 경로에 압축 파일 생성"},
+        {"timestamp": "2025-01-06T10:03:04.532Z", "event_code": "11", "title": "scvhost.exe 생성", "detail": "시스템 프로세스와 유사한 이름의 실행 파일 생성"},
+        {"timestamp": "2025-01-06T10:03:44.504Z", "event_code": "1", "title": "scvhost.exe 실행", "detail": "C2 및 유출 페이지 인자를 포함한 프로세스 실행"}
+      ]
+    },
+    {
+      "id": "INC-E08418985A",
+      "timestamp": "2025-01-06T10:03:44.504Z",
+      "title": "Unidentified Executable Started From User-Writable Directory",
+      "host": "CLIENT2.breach.local",
+      "severity": "high",
+      "risk_score": 91,
+      "verdict": "true_positive",
+      "alert_count": 2,
+      "summary": "사용자 쓰기 경로의 위장 실행 파일과 C2 통신 인자 확인",
+      "rules": ["Unidentified Executable Started From User-Writable Directory", "System Process Name Or Lookalike From Unexpected Path"],
+      "techniques": ["T1036", "T1204"],
+      "findings": ["scvhost.exe가 AppData Roaming 경로에서 실행", "정상 svchost.exe와 유사한 파일명 사용", "명령·유출 페이지 인자 확인"],
+      "limitations": ["파일 해시 평판과 메모리 분석 결과 미포함"],
+      "recommendations": ["실행 파일 해시 확보", "프로세스 트리 보존", "동일 경로 실행 차단"],
+      "timeline": [
+        {"timestamp": "2025-01-06T10:03:04.532Z", "event_code": "11", "title": "실행 파일 생성", "detail": "AppData Roaming 경로에 scvhost.exe 생성"},
+        {"timestamp": "2025-01-06T10:03:44.504Z", "event_code": "1", "title": "의심 프로세스 실행", "detail": "사용자 쓰기 가능 경로에서 실행"},
+        {"timestamp": "2025-01-06T10:03:45.018Z", "event_code": "3", "title": "네트워크 시도", "detail": "의심 프로세스의 외부 통신 정황"}
+      ]
+    },
+    {
+      "id": "INC-A897D1FB15",
+      "timestamp": "2025-01-06T10:04:12.144Z",
+      "title": "Unidentified Executable Started From User-Writable Directory",
+      "host": "CLIENT2.breach.local",
+      "severity": "high",
+      "risk_score": 89,
+      "verdict": "true_positive",
+      "alert_count": 2,
+      "summary": "의심 실행 파일의 후속 프로세스와 명령 처리 동작 확인",
+      "rules": ["Unidentified Executable Started From User-Writable Directory", "User-Writable Executable With Network Command Options"],
+      "techniques": ["T1059", "T1105"],
+      "findings": ["동일 Entity ID 계열의 후속 프로세스 생성", "네트워크 명령 처리 옵션 유지", "정상 설치 경로와 무관한 실행"],
+      "limitations": ["원격 명령의 실제 응답 내용 미확인"],
+      "recommendations": ["자식 프로세스 전체 수집", "네트워크 세션 검토", "사용자 자격 증명 교체 검토"],
+      "timeline": [
+        {"timestamp": "2025-01-06T10:04:12.144Z", "event_code": "1", "title": "후속 프로세스", "detail": "scvhost.exe 계열의 추가 실행"},
+        {"timestamp": "2025-01-06T10:04:13.021Z", "event_code": "7", "title": "이미지 로드", "detail": "의심 프로세스 모듈 로드"}
+      ]
+    },
+    {
+      "id": "INC-69ED1FEE57",
+      "timestamp": "2025-01-06T10:05:03.902Z",
+      "title": "Unidentified Executable Started From User-Writable Directory",
+      "host": "CLIENT2.breach.local",
+      "severity": "high",
+      "risk_score": 88,
+      "verdict": "true_positive",
+      "alert_count": 2,
+      "summary": "사용자 경로 실행 파일의 반복 실행과 시스템 도구 연계 확인",
+      "rules": ["Unidentified Executable Started From User-Writable Directory", "User-Writable Parent Spawns Shell Or System Control Utility"],
+      "techniques": ["T1059.003", "T1218"],
+      "findings": ["사용자 경로 프로세스가 시스템 제어 도구 실행", "부모·자식 관계가 동일 공격 흐름과 연결", "짧은 시간 내 반복된 후속 행위"],
+      "limitations": ["실행 명령의 전체 표준 출력 미수집"],
+      "recommendations": ["관련 프로세스 트리 보존", "사용자 프로필 경로 검사", "호스트 격리 후 포렌식 수행"],
+      "timeline": [
+        {"timestamp": "2025-01-06T10:05:03.902Z", "event_code": "1", "title": "반복 실행", "detail": "동일 사용자 경로에서 의심 프로세스 실행"},
+        {"timestamp": "2025-01-06T10:05:04.241Z", "event_code": "1", "title": "시스템 도구 실행", "detail": "의심 부모에서 Windows 제어 도구 생성"}
+      ]
+    },
+    {
+      "id": "INC-B4FF5FAB10",
+      "timestamp": "2025-01-06T11:00:03.411Z",
+      "title": "User-Writable Parent Spawns Shell Or System Control Utility",
+      "host": "CLIENT2.breach.local",
+      "severity": "high",
+      "risk_score": 86,
+      "verdict": "true_positive",
+      "alert_count": 1,
+      "summary": "사용자 쓰기 경로의 의심 부모 프로세스가 명령 셸 실행",
+      "rules": ["User-Writable Parent Spawns Shell Or System Control Utility"],
+      "techniques": ["T1059.003"],
+      "findings": ["scvhost.exe가 cmd.exe를 자식 프로세스로 실행", "이전 다운로드·실행 사건과 동일 호스트 및 프로세스 계열", "정상 업무 행위로 설명하기 어려운 부모 경로"],
+      "limitations": ["셸을 통해 실행된 모든 후속 명령 미확인"],
+      "recommendations": ["명령 셸 자식 프로세스 조사", "동일 Entity ID 이벤트 보존", "침해 계정 세션 종료"],
+      "timeline": [
+        {"timestamp": "2025-01-06T11:00:03.411Z", "event_code": "1", "title": "cmd.exe 실행", "detail": "사용자 경로의 의심 부모 프로세스에서 명령 셸 생성"},
+        {"timestamp": "2025-01-06T11:00:04.077Z", "event_code": "1", "title": "후속 명령", "detail": "시스템 구성 확인 명령 실행"}
+      ]
+    },
+    {
+      "id": "INC-963BD7181D",
+      "timestamp": "2025-01-06T11:00:05.905Z",
+      "title": "Registry Run Key Persistence Request",
+      "host": "CLIENT2.breach.local",
+      "severity": "medium",
+      "risk_score": 78,
+      "verdict": "true_positive",
+      "alert_count": 1,
+      "summary": "의심 실행 파일을 가리키는 사용자 Run Key 지속성 등록 확인",
+      "rules": ["Registry Run Key Persistence Request"],
+      "techniques": ["T1060", "T1547.001"],
+      "findings": ["Run Key가 사용자 AppData의 scvhost.exe를 참조", "이전 실행·셸 사건과 동일 파일 경로", "로그온 시 자동 실행 가능한 지속성 구성"],
+      "limitations": ["재부팅 이후 자동 실행 성공 여부 미검증"],
+      "recommendations": ["해당 Run Key 제거", "지속성 항목 전체 점검", "의심 실행 파일 격리 및 해시 차단"],
+      "timeline": [
+        {"timestamp": "2025-01-06T11:00:05.905Z", "event_code": "13", "title": "Registry 값 설정", "detail": "사용자 Run Key에 scvhost.exe 경로 등록"},
+        {"timestamp": "2025-01-06T11:00:06.311Z", "event_code": "12", "title": "Registry 객체 접근", "detail": "지속성 키 후속 접근"}
+      ]
+    }
+  ]
+}
+

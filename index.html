@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="IRIS Windows Sigma 탐지와 Local LLM 조사 정적 데모">
+  <meta name="theme-color" content="#102c30">
+  <title>IRIS · Security Operations Demo</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2.8 19h18.4L12 3Z"/><path d="M12 9v4"/><circle cx="12" cy="16.5" r=".8"/></symbol>
+    <symbol id="i-log" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 9h10M7 13h7M7 17h4"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r=".7"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5"/><path d="M4 19h16"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m5 5 14 14M19 5 5 19"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.86c-2.78.6-3.37-1.18-3.37-1.18-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.35 1.09 2.92.83.09-.65.35-1.09.64-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0 1 12 6.84a9.6 9.6 0 0 1 2.5.34c1.91-1.3 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.56 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></symbol>
+  </svg>
+
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#overview" aria-label="IRIS 홈">
+        <span class="brand-mark">I</span>
+        <span><strong>IRIS</strong><small>Security operations</small></span>
+      </a>
+      <nav class="nav" aria-label="주 메뉴">
+        <button class="nav-item active" data-view="overview"><svg><use href="#i-grid"/></svg><span>개요</span></button>
+        <button class="nav-item" data-view="alerts"><svg><use href="#i-alert"/></svg><span>Alert</span><em id="navAlertCount">9</em></button>
+        <button class="nav-item" data-view="evidence"><svg><use href="#i-log"/></svg><span>증거 로그</span></button>
+        <button class="nav-item" data-view="about"><svg><use href="#i-info"/></svg><span>프로젝트</span></button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="demo-card"><span class="status-dot"></span><strong>정적 데모</strong><p>SET01 · DEDALE<br>외부 연결 없음</p></div>
+      <a class="repo-link" href="https://github.com/Project-IRIS-Labs/IRIS"><svg><use href="#i-github"/></svg><span>Source code</span></a>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <button id="menuButton" class="icon-button menu-button" type="button" aria-label="메뉴 열기"><svg><use href="#i-grid"/></svg></button>
+        <div class="global-search"><svg><use href="#i-search"/></svg><input id="globalSearch" type="search" placeholder="사건 ID, 룰, 증거 검색" aria-label="전체 검색"></div>
+        <div class="top-actions"><span class="snapshot-badge">SNAPSHOT · 2025-01-06</span><a class="top-github" href="https://github.com/Project-IRIS-Labs"><svg><use href="#i-github"/></svg><span>GitHub</span></a></div>
+      </header>
+
+      <main>
+        <section id="overviewView" class="view active">
+          <div class="page-heading">
+            <div><p class="eyebrow">OVERVIEW</p><h1>보안 운영 현황</h1><p>탐지부터 AI 조사까지 SET01의 실제 평가 구조를 재현한 정적 데모입니다.</p></div>
+            <div class="scope-card"><span>평가 시나리오</span><strong>SET01 · 5시간</strong><small>10:01 UTC 공격 시작</small></div>
+          </div>
+
+          <div class="metric-grid">
+            <article class="metric-card primary"><span>원본 Sigma Alert</span><strong id="metricAlerts">9</strong><small>54개 Windows 룰</small></article>
+            <article class="metric-card danger"><span>AI 악성 사건</span><strong id="metricIncidents">6</strong><small>동일 이벤트 병합 기준</small></article>
+            <article class="metric-card calm"><span>영향 호스트</span><strong id="metricHosts">1</strong><small>CLIENT2.breach.local</small></article>
+            <article class="metric-card coverage"><span>후속 증거 범위</span><strong id="metricCoverage">100%</strong><small>최초 프로세스 Recall 87.5%</small></article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="panel flow-panel">
+              <div class="panel-heading"><div><span>탐지 흐름</span><small>2025-01-06 09:00~14:00 UTC</small></div><div class="legend"><i></i>악성 사건</div></div>
+              <div id="flowChart" class="flow-chart"></div>
+            </article>
+            <article class="panel score-panel">
+              <div class="panel-heading"><div><span>조사 범위 확장</span><small>프로세스 Ground Truth 기준</small></div></div>
+              <div class="score-body"><div class="ring" id="coverageRing"><span><strong>100%</strong><small>증거 범위</small></span></div><div class="score-list"><p><span>룰 최초 확인</span><strong>7 / 8</strong></p><p><span>LLM 증거 확인</span><strong>8 / 8</strong></p><p><span>도구 호출</span><strong>53회</strong></p></div></div>
+            </article>
+          </div>
+
+          <article class="panel recent-panel">
+            <div class="panel-heading"><div><span>주요 사건</span><small>9개 Alert를 6개 조사 사건으로 그룹화</small></div><button class="text-button" data-view="alerts">전체 Alert 보기</button></div>
+            <div class="table-wrap"><table><thead><tr><th>사건</th><th>호스트</th><th>발생 시각</th><th>위험도</th><th>AI 판정</th><th></th></tr></thead><tbody id="recentTable"></tbody></table></div>
+          </article>
+        </section>
+
+        <section id="alertsView" class="view">
+          <div class="page-heading compact"><div><p class="eyebrow">ALERTS</p><h1>조사 사건</h1><p>Sigma Alert와 AI 조사 결과를 사건 단위로 확인합니다.</p></div><div class="list-count"><strong id="incidentCount">6</strong><span>사건 · Alert 9개</span></div></div>
+          <div class="filter-bar"><div class="filter-search"><svg><use href="#i-search"/></svg><input id="alertSearch" type="search" placeholder="사건, 호스트, 룰 검색"></div><label><span>위험도</span><select id="severityFilter"><option value="all">전체</option><option value="high">High</option><option value="medium">Medium</option></select></label></div>
+          <article class="panel"><div class="table-wrap"><table><thead><tr><th>위험도</th><th>사건</th><th>호스트</th><th>발생 시각</th><th>원본 Alert</th><th>AI 판정</th><th></th></tr></thead><tbody id="incidentTable"></tbody></table></div><div id="alertEmpty" class="empty-state hidden">조건에 맞는 사건이 없습니다.</div></article>
+        </section>
+
+        <section id="evidenceView" class="view">
+          <div class="page-heading compact"><div><p class="eyebrow">EVIDENCE</p><h1>증거 로그</h1><p>외부 Elasticsearch 없이 사건 보고서에 포함된 비식별 타임라인을 탐색합니다.</p></div><div class="scope-card"><span>데이터 모드</span><strong>Static snapshot</strong><small>읽기 전용</small></div></div>
+          <article class="panel evidence-panel"><div class="evidence-toolbar"><div class="filter-search"><svg><use href="#i-search"/></svg><input id="evidenceSearch" type="search" placeholder="Event ID, 프로세스, 설명 검색"></div><span id="evidenceCount">0개 이벤트</span></div><div id="evidenceList" class="evidence-list"></div></article>
+        </section>
+
+        <section id="aboutView" class="view">
+          <div class="page-heading"><div><p class="eyebrow">PROJECT</p><h1>Sigma 이후를 조사하는 IRIS</h1><p>룰 탐지를 끝이 아닌 조사 시작점으로 사용합니다.</p></div></div>
+          <div class="architecture panel"><div class="architecture-step"><span>01</span><strong>Sigma detection</strong><p>Windows 이벤트에서 조사할 단일 이벤트 Alert 생성</p></div><i></i><div class="architecture-step"><span>02</span><strong>LLM investigation</strong><p>최대 10단계 조회·분석과 프로세스 트리 확장</p></div><i></i><div class="architecture-step"><span>03</span><strong>Analyst report</strong><p>근거, 한계와 대응 방안을 구조화한 사건 보고서</p></div></div>
+          <div class="project-grid"><article class="panel project-card"><span>Source</span><h2>IRIS</h2><p>탐지 엔진, 54개 Sigma 룰, Qwen 하네스와 관제 플랫폼</p><a href="https://github.com/Project-IRIS-Labs/IRIS">소스코드 보기</a></article><article class="panel project-card"><span>Benchmark</span><h2>eval-bench</h2><p>6개 평가 시나리오, Ground Truth 정책과 최종 성능 결과</p><a href="https://github.com/Project-IRIS-Labs/eval-bench">평가 자료 보기</a></article><article class="panel project-card"><span>Dataset</span><h2>DEDALE</h2><p>55대 규모의 모의 기업망에서 생성된 공개 보안 데이터셋</p><a href="https://dedale.inria.fr/download.html">공식 데이터셋</a></article></div>
+          <article class="interpretation panel"><h2>결과 해석</h2><p>IRIS의 LLM은 Sigma가 놓친 행위를 독립적으로 새 Alert로 만들지 않습니다. 최초 프로세스 Recall은 87.5%이며, 조사 과정에서 부모·자식 프로세스 증거 범위를 100%까지 확장했습니다.</p></article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+  <aside id="incidentDrawer" class="drawer hidden" aria-hidden="true">
+    <header class="drawer-header"><div><p id="drawerId" class="eyebrow"></p><h2 id="drawerTitle"></h2></div><button id="drawerClose" class="icon-button" type="button" aria-label="닫기"><svg><use href="#i-close"/></svg></button></header>
+    <div id="drawerContent" class="drawer-content"></div>
+  </aside>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
+
