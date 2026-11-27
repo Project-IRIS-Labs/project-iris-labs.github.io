@@ -183,6 +183,7 @@ tbody tr[data-incident]:hover { background: #f7faf9; }
 @keyframes drawer-in { from { transform: translateX(24px); opacity: .4; } to { transform: translateX(0); opacity: 1; } }
 .drawer-header { position: sticky; top: 0; z-index: 2; display: flex; min-height: 92px; padding: 20px 24px; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); background: rgba(255, 255, 255, .95); backdrop-filter: blur(14px); }
 .drawer-header h2 { margin: 0; font-size: 1.15rem; letter-spacing: -.025em; }
+.drawer-header-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; }
 .drawer-content { padding: 22px; }
 .incident-hero, .detail-section { margin-bottom: 16px; padding: 26px; border: 1px solid var(--line); border-radius: 15px; background: white; }
 .incident-hero-top { display: flex; justify-content: space-between; gap: 20px; }
@@ -294,6 +295,10 @@ tbody tr[data-incident]:hover { background: #f7faf9; }
   .evidence-toolbar { align-items: stretch; flex-direction: column; }
   .evidence-row { grid-template-columns: 1fr; gap: 7px; }
   .incident-hero-top { flex-direction: column-reverse; }
+  .drawer-header { align-items: flex-start; }
+  .drawer-header h2 { max-width: 44vw; }
+  .drawer-header-actions { gap: 6px; }
+  .drawer-header-actions .download-button { min-height: 38px; padding: 0 10px; }
   .risk { width: 72px; height: 72px; }
   .incident-meta { grid-template-columns: 1fr; }
   .review-form, .alert-field-grid { grid-template-columns: 1fr; }

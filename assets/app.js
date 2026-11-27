@@ -232,9 +232,8 @@ function openIncident(id) {
     ${listSection("분석 한계", item.limitations)}
     ${listSection("권고 대응", item.recommendations)}
     ${reviewSection(item)}
-    ${rawAlertSection(item)}
-    <section class="detail-section report-export-section"><div><h3>사건 보고서</h3><p>현재 AI 분석과 담당자 검토 내용을 독립형 HTML로 저장합니다.</p></div><div class="drawer-actions"><button id="downloadReport" class="download-button" type="button"><svg><use href="#i-download"/></svg>HTML 보고서 내보내기</button></div></section>`;
-  $("#downloadReport").addEventListener("click", () => downloadReport(item));
+    ${rawAlertSection(item)}`;
+  $("#downloadReport").onclick = () => downloadReport(item);
   $("#reviewForm").addEventListener("submit", (event) => saveReview(event, item));
   $$('[data-copy-alert]', $("#drawerContent")).forEach((button) => button.addEventListener("click", () => {
     copyJson(item.raw_alerts[Number(button.dataset.copyAlert)]);

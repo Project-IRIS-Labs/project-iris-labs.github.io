@@ -101,7 +101,13 @@
 
   <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
   <aside id="incidentDrawer" class="drawer hidden" aria-hidden="true">
-    <header class="drawer-header"><div><p id="drawerId" class="eyebrow"></p><h2 id="drawerTitle"></h2></div><button id="drawerClose" class="icon-button" type="button" aria-label="닫기"><svg><use href="#i-close"/></svg></button></header>
+    <header class="drawer-header">
+      <div><p id="drawerId" class="eyebrow"></p><h2 id="drawerTitle"></h2></div>
+      <div class="drawer-header-actions">
+        <button id="downloadReport" class="download-button" type="button"><svg><use href="#i-download"/></svg>HTML 보고서 내보내기</button>
+        <button id="drawerClose" class="icon-button" type="button" aria-label="닫기"><svg><use href="#i-close"/></svg></button>
+      </div>
+    </header>
     <div id="drawerContent" class="drawer-content"></div>
   </aside>
 
